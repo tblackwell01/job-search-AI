@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Job Search — Tyler Blackwell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f12;
+    --surface: #161a1f;
+    --surface2: #1e242b;
+    --border: rgba(255,255,255,0.07);
+    --border-hover: rgba(255,255,255,0.16);
+    --text: #e8eaed;
+    --muted: #6b7280;
+    --accent: #4ade80;
+    --accent-dim: rgba(74,222,128,0.12);
+    --accent-border: rgba(74,222,128,0.3);
+    --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.1);
+    --purple-border: rgba(167,139,250,0.3);
+    --blue: #60a5fa;
+    --blue-dim: rgba(96,165,250,0.1);
+    --blue-border: rgba(96,165,250,0.28);
+    --amber: #fbbf24;
+    --amber-dim: rgba(251,191,36,0.1);
+    --amber-border: rgba(251,191,36,0.28);
+    --coral: #fb7185;
+    --coral-dim: rgba(251,113,133,0.1);
+    --coral-border: rgba(251,113,133,0.28);
+    --teal: #2dd4bf;
+    --teal-dim: rgba(45,212,191,0.1);
+    --teal-border: rgba(45,212,191,0.28);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  /* Grid noise texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 0 24px; }
+
+  /* Header */
+  header {
+    padding: 52px 0 36px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 36px;
+  }
+  .header-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  h1 {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .header-sub {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  /* Controls bar */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-start;
+    margin-bottom: 36px;
+    padding: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .control-group { display: flex; flex-direction: column; gap: 8px; }
+  .control-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .pill-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pill {
+    font-size: 12px;
+    font-weight: 400;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Sora', sans-serif;
+  }
+  .pill:hover { border-color: var(--border-hover); color: var(--text); }
+  .pill.active { border-color: var(--accent-border); background: var(--accent-dim); color: var(--accent); }
+  .pill.platform.active-li { border-color: var(--blue-border); background: var(--blue-dim); color: var(--blue); }
+  .pill.platform.active-in { border-color: var(--amber-border); background: var(--amber-dim); color: var(--amber); }
+  .pill.platform.active-gj { border-color: var(--coral-border); background: var(--coral-dim); color: var(--coral); }
+
+  /* Company text input */
+  .company-input-wrap { flex: 1; min-width: 220px; }
+  .company-input-wrap input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .company-input-wrap input:focus { border-color: var(--border-hover); }
+  .company-input-wrap input::placeholder { color: var(--muted); }
+  .input-hint { font-size: 11px; color: var(--muted); margin-top: 5px; }
+
+  /* Section */
+  .section { margin-bottom: 32px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .section-line { flex: 1; height: 1px; background: var(--border); }
+
+  /* Role buttons */
+  .role-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .role-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+  }
+  .role-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .role-btn:hover { border-color: var(--border-hover); transform: translateY(-1px); }
+  .role-btn:active { transform: translateY(0); }
+
+  .role-btn .icon { font-size: 14px; opacity: 0.7; flex-shrink: 0; }
+  .role-btn .label { flex: 1; }
+  .role-btn .arrow {
+    font-size: 11px;
+    opacity: 0;
+    transition: opacity 0.15s, transform 0.15s;
+    color: var(--muted);
+    margin-left: 2px;
+  }
+  .role-btn:hover .arrow { opacity: 1; transform: translateX(2px); }
+
+  /* Color variants */
+  .purple-btn { border-color: var(--purple-border); }
+  .purple-btn:hover { background: var(--purple-dim); border-color: var(--purple); }
+  .purple-btn .icon { color: var(--purple); }
+
+  .teal-btn { border-color: var(--teal-border); }
+  .teal-btn:hover { background: var(--teal-dim); border-color: var(--teal); }
+  .teal-btn .icon { color: var(--teal); }
+
+  .blue-btn { border-color: var(--blue-border); }
+  .blue-btn:hover { background: var(--blue-dim); border-color: var(--blue); }
+  .blue-btn .icon { color: var(--blue); }
+
+  .amber-btn { border-color: var(--amber-border); }
+  .amber-btn:hover { background: var(--amber-dim); border-color: var(--amber); }
+  .amber-btn .icon { color: var(--amber); }
+
+  .coral-btn { border-color: var(--coral-border); }
+  .coral-btn:hover { background: var(--coral-dim); border-color: var(--coral); }
+  .coral-btn .icon { color: var(--coral); }
+
+  .green-btn { border-color: var(--accent-border); }
+  .green-btn:hover { background: var(--accent-dim); border-color: var(--accent); }
+  .green-btn .icon { color: var(--accent); }
+
+  /* Toast */
+  #toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(12px);
+    background: var(--surface2);
+    border: 1px solid var(--border-hover);
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text);
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 100;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Updated badge */
+  .updated {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  @media (max-width: 600px) {
+    h1 { font-size: 20px; }
+    .controls { gap: 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="header-eyebrow">AI Company Job Search</div>
+    <h1>Find your next role in AI</h1>
+    <p class="header-sub">One-click searches across LinkedIn, Indeed &amp; Google Jobs — scoped to the top AI companies.</p>
+    <p class="updated">Updated May 2026 · 100 companies indexed</p>
+  </header>
+
+  <div class="controls">
+
+    <!-- Platform -->
+    <div class="control-group">
+      <div class="control-label">Platform</div>
+      <div class="pill-row" id="platform-pills">
+        <button class="pill platform active-li" data-p="linkedin" onclick="setPlatform(this)">LinkedIn</button>
+        <button class="pill platform" data-p="indeed" onclick="setPlatform(this)">Indeed</button>
+        <button class="pill platform" data-p="google" onclick="setPlatform(this)">Google Jobs</button>
+      </div>
+    </div>
+
+    <!-- Company preset -->
+    <div class="control-group">
+      <div class="control-label">Company preset</div>
+      <div class="pill-row" id="preset-pills">
+        <button class="pill active" data-preset="top10" onclick="setPreset(this)">Top 10</button>
+        <button class="pill" data-preset="top30" onclick="setPreset(this)">Top 30</button>
+        <button class="pill" data-preset="custom" onclick="setPreset(this)">Custom</button>
+        <button class="pill" data-preset="none" onclick="setPreset(this)">No filter</button>
+      </div>
+    </div>
+
+    <!-- Custom company input -->
+    <div class="control-group company-input-wrap" id="custom-wrap" style="display:none">
+      <div class="control-label">Custom companies</div>
+      <input type="text" id="custom-companies" placeholder="e.g. Salesforce, Workday, ServiceNow" />
+      <p class="input-hint">Comma-separated · used in OR query</p>
+    </div>
+
+  </div>
+
+  <!-- SECTION: People & HR -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">People, HR &amp; Workforce</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="role-row">
+      <button class="role-btn purple-btn" onclick="launch('workforce planning OR workforce intelligence OR workforce strategy OR head of workforce')">
+        <span class="icon">◈</span><span class="label">Workforce planning / strategy</span><span class="arrow">→</span>
+      </button>
+      <button class="role-btn purple-btn" onclick="launch('people analytics OR HR analytics OR workforce analytics OR people data')">
+        <span class="icon">◈</span><span class="label">People analytics</span><span class="arrow">→</span>
+      </button>
+      <button class="role-btn purple-btn" onclick="launch('HRBP OR HR business partner OR people partner OR people operations')">
+        <span class="icon">◈</span><span class="label">HRBP / people partner</span><span class="arrow">→</span>
+      </button>
+      <button class="role-btn purple-btn" onclick="launch('head of people OR VP people OR Chief People Officer OR CHRO OR people leader')">
+        <span class="icon">◈</span><span class="label">Head of people / CPO / CHRO</span><span class="arrow">→</span>
+      </button>
+      <button class="role-btn purple-btn" onclick="launch('org design OR organizational effectiveness OR talent management OR organizational development')">
+        <span class="icon">◈</span><span class="label">Org design / talent mgmt</span><span class="arrow">→</span>
+      </button>
+      <button class="role-btn purple-btn" onclick="launch('director of HR OR VP HR OR head of HR OR senior HRBP')">
+        <span class="icon">◈</span><span class="label">Director / VP HR</span><span class="arrow">→</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- SECTION: AI Enablement -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">AI Enablement &amp; Innovation</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="role-row">
+      <button class="role-btn teal-btn" onclick="launch('AI enablement OR AI transformation OR AI adoption OR AI readiness')">
+        <span class="icon">⬡</span><span class="label">AI enablement</span><span class="arrow">→</span>
+      </button>
+      <button class="role-btn teal-btn" onclick="launch('AI strategy OR head of AI OR director of AI OR VP of AI')">
+        <span class="icon">⬡</span><span class="label">AI strategy / head of AI</span><span class="arrow">→</span>
+      </button>
+      <button class="role-btn teal-btn" onclick="launch('agentic AI OR AI agents OR agentic workforce OR AI automation strategy')">
+        <span class="icon">⬡</span><span class="label">Agentic AI roles</span><span class="arrow">→</span>
+      </button>
+      <button class="role-btn teal-btn" onclick="launch('AI product manager OR AI program manager OR AI portfolio')">
+        <span class="icon">⬡</span><span class="label">AI product / program mgr</span><span class="arrow">→</span>
+      </button>
+      <button class="role-btn teal-btn" onclick="launch('AI innovation OR innovation lead OR AI center of excellence OR AI CoE')">
+        <span class="icon">⬡</span><span class="label">AI innovation / CoE</span><span class="arrow">→</span>
+      </button>
+      <button class="role-btn teal-btn" onclick="launch('responsible AI OR AI governance OR AI ethics OR AI policy')">
+        <span class="icon">⬡</span><span class="label">Responsible AI / governance</span><span class="arrow">→</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- SECTION: Workforce Transformation -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Workforce Transformation &amp; Change</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="role-row">
+      <button class="role-btn blue-btn" onclick="launch('workforce transformation OR future of work OR work transformation')">
+        <span class="icon">▲</span><span class="label">Workforce transformation</span><span class="arrow">→</span>
+      </button>
+      <button class="role-btn blue-btn" onclick="launch('change management OR change enablement OR organizational change OR OCM')">
+        <span class="icon">▲</span><span class="label">Change management</span><span class="arrow">→</span>
+      </button>
+      <button class="role-btn blue-btn" onclick="launch('learning and development OR L&D OR talent development OR capability building')">
+        <span class="icon">▲</span><span class="label">L&D / talent development</span><span class="arrow">→</span>
+      </button>
+      <button class="role-btn blue-btn" onclick="launch('skills strategy OR skills intelligence OR skills taxonomy OR skills-based organization')">
+        <span class="icon">▲</span><span class="label">Skills strategy</span><span class="arrow">→</span>
+      </button>
+      <button class="role-btn blue-btn" onclick="launch('employee experience OR EX strategy OR culture transformation')">
+        <span class="icon">▲</span><span class="label">Employee experience</span><span class="arrow">→</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- SECTION: Strategy & Leadership -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Strategy &amp; Thought Leadership</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="role-row">
+      <button class="role-btn amber-btn" onclick="launch('strategic workforce planning OR capacity planning human capital OR SWP')">
+        <span class="icon">◆</span><span class="label">Strategic workforce planning</span><span class="arrow">→</span>
+      </button>
+      <button class="role-btn amber-btn" onclick="launch('chief of staff OR head of strategy OR VP strategy OR strategy director')">
+        <span class="icon">◆</span><span class="label">Chief of staff / strategy</span><span class="arrow">→</span>
+      </button>
+      <button class="role-btn amber-btn" onclick="launch('future of work research OR workforce research OR labor market analyst OR human capital research')">
+        <span class="icon">◆</span><span class="label">Workforce research</span><span class="arrow">→</span>
+      </button>
+      <button class="role-btn amber-btn" onclick="launch('thought leadership OR research director OR principal researcher human capital')">
+        <span class="icon">◆</span><span class="label">Research / thought leadership</span><span class="arrow">→</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- SECTION: Adjacent -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Adjacent &amp; Stretch Roles</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="role-row">
+      <button class="role-btn coral-btn" onclick="launch('talent acquisition strategy OR head of recruiting OR VP talent acquisition')">
+        <span class="icon">○</span><span class="label">Talent acquisition leader</span><span class="arrow">→</span>
+      </button>
+      <button class="role-btn coral-btn" onclick="launch('total rewards OR compensation strategy OR rewards analytics OR pay equity')">
+        <span class="icon">○</span><span class="label">Total rewards / comp</span><span class="arrow">→</span>
+      </button>
+      <button class="role-btn coral-btn" onclick="launch('HR technology OR HRtech OR people technology OR HRIS OR HCM')">
+        <span class="icon">○</span><span class="label">HR technology / HRIS</span><span class="arrow">→</span>
+      </button>
+      <button class="role-btn green-btn" onclick="launch('workforce consulting OR human capital consulting OR workforce advisory')">
+        <span class="icon">◉</span><span class="label">Workforce consulting</span><span class="arrow">→</span>
+      </button>
+      <button class="role-btn green-btn" onclick="launch('people science OR organizational psychology OR IO psychology OR behavioral science HR')">
+        <span class="icon">◉</span><span class="label">People science / IO psych</span><span class="arrow">→</span>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+  let platform = 'linkedin';
+  let preset = 'top10';
+
+  const top10 = ['OpenAI','Anthropic','Google','Meta','xAI','NVIDIA','Microsoft','Amazon','Perplexity','Mistral'];
+  const top30 = [...top10, 'Hugging Face','ElevenLabs','Runway','Midjourney','Cursor','Databricks','Snowflake','Palantir','Scale AI','Cohere','ByteDance','Salesforce','ServiceNow','Workday','Harvey AI','Figure AI','Waymo','Stability AI','Character.AI','Groq'];
+
+  function setPlatform(el) {
+    document.querySelectorAll('.pill.platform').forEach(p => p.className = 'pill platform');
+    const map = { linkedin: 'active-li', indeed: 'active-in', google: 'active-gj' };
+    el.classList.add(map[el.dataset.p]);
+    platform = el.dataset.p;
+  }
+
+  function setPreset(el) {
+    document.querySelectorAll('#preset-pills .pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    preset = el.dataset.preset;
+    document.getElementById('custom-wrap').style.display = preset === 'custom' ? 'flex' : 'none';
+  }
+
+  function getCompanies() {
+    if (preset === 'none') return [];
+    if (preset === 'top10') return top10;
+    if (preset === 'top30') return top30;
+    if (preset === 'custom') {
+      const raw = document.getElementById('custom-companies').value;
+      return raw.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    return [];
+  }
+
+  function buildUrl(roleQuery) {
+    const companies = getCompanies();
+    let companyPart = companies.length ? ' (' + companies.join(' OR ') + ')' : '';
+    const q = encodeURIComponent(roleQuery + companyPart);
+    if (platform === 'linkedin') {
+      return 'https://www.linkedin.com/jobs/search/?keywords=' + q + '&f_TPR=r604800&f_E=4%2C5%2C6';
+    } else if (platform === 'indeed') {
+      return 'https://www.indeed.com/jobs?q=' + q + '&fromage=14';
+    } else {
+      return 'https://www.google.com/search?q=' + q + '+jobs&ibp=htl;jobs';
+    }
+  }
+
+  function launch(roleQuery) {
+    const url = buildUrl(roleQuery);
+    window.open(url, '_blank');
+    const label = roleQuery.split(' OR ')[0];
+    const plLabel = { linkedin: 'LinkedIn', indeed: 'Indeed', google: 'Google Jobs' }[platform];
+    const companies = getCompanies();
+    const compLabel = companies.length ? ` · ${companies.length} companies` : ' · no company filter';
+    showToast(`↗ Opened "${label}" on ${plLabel}${compLabel}`);
+  }
+
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+  }
+</script>
+</body>
+</html>
